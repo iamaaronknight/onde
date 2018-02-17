@@ -49,7 +49,7 @@ class Onde::DirectoryStructure
   end
 
   private def expand_node(node)
-    @expanded_paths[node.alias] = node.path
+    @expanded_paths[node.alias] = node.path if node.alias
     node.children.each do |child_node|
       expand_node(child_node)
     end
@@ -61,12 +61,18 @@ class Onde::Node
   attr_reader :alias, :path, :children
 
   def initialize(data, parent_path=nil)
-    @alias = data.keys()[0]
-    info = data[@alias]
-    path_part = info[0]
+    node_data, child_data = data
+    if node_data.is_a? Hash
+      @alias = node_data.keys()[0]
+      path_part = node_data[@alias]
+    else
+      @alias = nil
+      path_part = node_data
+    end
     @path = parent_path.nil? ? path_part : File.join(parent_path, path_part)
     
-    @children = info.drop(1).map do |child_data|
+    child_data ||= []
+    @children = child_data.map do |child_data|
       Onde::Node.new(child_data, @path)
     end
   end

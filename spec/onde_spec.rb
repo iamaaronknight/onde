@@ -2,23 +2,25 @@ require './lib/onde.rb'
 require 'yaml'
 require 'set'
 
+YAML_CONTENTS = <<-eos
+-
+  - foo: foo.txt
+-
+  - test_directory/
+  -
+    -
+      - bar: bar.txt
+    -
+      - deeply_nested: deep_test_directory/
+      -
+        - baz: baz.txt
+eos
+
+
 describe 'Onde' do
   before :all do
     # Create a yaml file
-    data = [
-      {
-        'nested' => [
-          'test_directory', 
-          {
-            'bar' => ['bar.txt'],
-          }
-        ]
-      }, 
-      {
-        'foo' => ['foo.txt']
-      },
-    ]
-    File.open('./.test-onde.yml', 'w') {|file| file.write data.to_yaml }
+    File.open('./.test-onde.yml', 'w') {|file| file.write YAML_CONTENTS }
   end
 
   after :all do
@@ -43,16 +45,17 @@ describe 'Onde' do
 
     describe '#aliases' do
       it 'returns all of the aliases' do
-        expect(Onde.aliases).to eq Set.new(['nested', 'foo', 'bar'])
+        expect(Onde.aliases).to eq Set.new(['foo', 'bar', 'deeply_nested', 'baz'])
       end
     end
 
     describe '#paths' do
       it 'returns a hash of all the paths' do
         expect(Onde.paths).to eq (
-          { 'nested' => 'test_directory',
-            'foo' => 'foo.txt',
+          { 'foo' => 'foo.txt',
             'bar' => 'test_directory/bar.txt',
+            'deeply_nested' => 'test_directory/deep_test_directory/',
+            'baz' => 'test_directory/deep_test_directory/baz.txt',
           }
         )
       end
@@ -64,7 +67,7 @@ describe 'Onde' do
       end
 
       it 'returns a directory' do
-        expect(Onde.path('nested')).to eq 'test_directory'
+        expect(Onde.path('deeply_nested')).to eq 'test_directory/deep_test_directory/'
       end
 
       it 'returns a nested path' do
