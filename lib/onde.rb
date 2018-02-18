@@ -4,6 +4,7 @@ require 'set'
 
 class Onde
   class ArgumentsError < StandardError; end
+  class ConfigurationError < StandardError; end
 
   class << self
     def onde_file_path=(path)
@@ -65,7 +66,14 @@ class Onde::DirectoryStructure
   end
 
   private def expand_node(node)
-    @expanded_paths[node.alias.to_sym] = node.path if node.alias
+    if node.alias
+      node_alias = node.alias.to_sym
+      if @expanded_paths[node_alias]
+        raise Onde::ConfigurationError.new('More than one path is tagged with the same alias.') 
+      end
+      @expanded_paths[node_alias] = node.path
+    end
+
     node.children.each do |child_node|
       expand_node(child_node)
     end
@@ -77,14 +85,20 @@ class Onde::Node
   attr_reader :alias, :path, :children
 
   def initialize(data, parent_path=nil)
+    unless data.is_a? Array
+      raise Onde::ConfigurationError.new("Node #{data} is not properly formed")
+    end
     node_data, child_data = data
     if node_data.is_a? Hash
       @alias = node_data.keys()[0]
       path_part = node_data[@alias]
-    else
+    elsif node_data.is_a? String
       @alias = nil
       path_part = node_data
+    else
+      raise Onde::ConfigurationError.new("Node #{data} is not properly formed")
     end
+    
     @path = parent_path.nil? ? path_part : File.join(parent_path, path_part)
     
     child_data ||= []

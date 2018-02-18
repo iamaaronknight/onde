@@ -13,13 +13,14 @@ YAML_CONTENTS = <<-eos
     -
       - deeply_nested: deep_test_directory/
       -
-        - baz: <file_name>.<file_type>
+        -
+          - baz: <file_name>.<file_type>
 -
   - spacy: /A Folder/a file.txt
 eos
 
 
-describe 'Onde' do
+describe Onde do
   before :all do
     # Create a yaml file
     File.open('./.test-onde.yml', 'w') {|file| file.write YAML_CONTENTS }
@@ -101,5 +102,71 @@ describe 'Onde' do
         expect(Onde.path('foo')).to eq 'foo.txt'
       end
     end
+  end
+end
+
+
+describe Onde::DirectoryStructure do
+  it 'initializes with valid data' do
+    data = YAML.load(YAML_CONTENTS)
+    onde = Onde::DirectoryStructure.new(data)
+    expect(onde.to_hash).to eq (
+      { foo: 'foo.txt',
+        bar: 'test_directory/bar.txt',
+        deeply_nested: 'test_directory/deep_test_directory/',
+        baz: 'test_directory/deep_test_directory/<file_name>.<file_type>',
+        spacy: '/A Folder/a file.txt'
+      }
+    )
+  end
+
+  it 'raises an error when the same alias is used more than once' do
+    expect{Onde::DirectoryStructure.new([[{foo: 'path/a'}], [{foo: 'path/b'}]])}.to raise_error Onde::ConfigurationError
+  end
+
+  it 'raises an error for incorrectly formatted configuration data' do
+    # These are some examples with well-formed data
+    Onde::DirectoryStructure.new([[{foo: 'path/a'}]])
+    Onde::DirectoryStructure.new([[{foo: 'path/a'}, [[{bar: 'path/b'}]]]])
+
+    # - foo: path/a
+    # instead of:
+    # -
+    #   - foo: path/a
+    expect{
+      Onde::DirectoryStructure.new([{foo: 'path/a'}])
+    }.to raise_error Onde::ConfigurationError
+
+    # -
+    #   - foo: path/a
+    #   -
+    #     - bar: path/b
+    # instead of :
+    # -
+    #   - foo: path/a
+    #   -
+    #     -
+    #       - bar: path/b
+    expect{
+      Onde::DirectoryStructure.new([[{foo: 'path/a'}, [{bar: 'path/b'}]]])
+    }.to raise_error Onde::ConfigurationError
+
+    # -
+    #   - foo: path/a
+    #   - bar: path/b
+    # instead of:
+    # -
+    #   - foo: path/a
+    #   -
+    #     -
+    #       - bar: path/b
+    # or:
+    # -
+    #   - foo: path/a
+    # -
+    #   - bar: path/b
+    expect{
+      Onde::DirectoryStructure.new([[{foo: 'path/a'}, {bar: 'path/b'}]])
+    }.to raise_error Onde::ConfigurationError
   end
 end
