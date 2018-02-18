@@ -1,7 +1,10 @@
 require 'yaml'
 require 'set'
 
+
 class Onde
+  class ArgumentsError < StandardError; end
+
   class << self
     def onde_file_path=(path)
       @@onde_file_path = path
@@ -11,8 +14,20 @@ class Onde
       @@onde_file_path ||= '.onde.yml'
     end
 
-    def path(path_alias)
-      paths[path_alias]
+    def path(path_alias, kwargs={})
+      _path = paths[path_alias]
+
+      if kwargs
+        kwargs.each do |variable, value|
+          _path = _path.sub(/<#{variable}>/, value)
+        end
+      end
+
+      if !!(_path =~ /<.*?>/)
+        raise Onde::ArgumentsError
+      end
+
+      _path
     end
 
     def aliases
@@ -20,13 +35,9 @@ class Onde
     end
 
     def paths
-      @@expanded_paths ||=  get_paths
+      @@expanded_paths ||=  Onde::DirectoryStructure.paths(YAML.load_file(onde_file_path))
     end
-    
-    private def get_paths
-      raw_data = YAML.load_file(onde_file_path)
-      Onde::DirectoryStructure.paths(raw_data)
-    end
+
   end
 end
 

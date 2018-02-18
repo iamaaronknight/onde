@@ -13,7 +13,7 @@ YAML_CONTENTS = <<-eos
     -
       - deeply_nested: deep_test_directory/
       -
-        - baz: baz.txt
+        - baz: <file_name>.<file_type>
 eos
 
 
@@ -55,7 +55,7 @@ describe 'Onde' do
           { 'foo' => 'foo.txt',
             'bar' => 'test_directory/bar.txt',
             'deeply_nested' => 'test_directory/deep_test_directory/',
-            'baz' => 'test_directory/deep_test_directory/baz.txt',
+            'baz' => 'test_directory/deep_test_directory/<file_name>.<file_type>',
           }
         )
       end
@@ -72,6 +72,16 @@ describe 'Onde' do
 
       it 'returns a nested path' do
         expect(Onde.path('bar')).to eq 'test_directory/bar.txt'
+      end
+
+      context 'for an alias with variables' do
+        it 'replaces the path variables with the specified values' do
+          expect(Onde.path('baz', file_name: 'test_file_name', file_type: 'txt')).to eq 'test_directory/deep_test_directory/test_file_name.txt'
+        end
+
+        it 'raises an error when values are not supplied for all of the variables' do
+          expect{Onde.path('baz', file_name: 'test_file_name')}.to raise_error Onde::ArgumentsError
+        end
       end
     end
   end
