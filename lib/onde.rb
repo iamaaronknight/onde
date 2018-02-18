@@ -15,7 +15,7 @@ class Onde
     end
 
     def path(path_alias, kwargs={})
-      _path = paths[path_alias]
+      _path = paths[path_alias.to_sym]
 
       escape = kwargs.delete(:escape)
       escape = true if escape.nil?
@@ -65,7 +65,7 @@ class Onde::DirectoryStructure
   end
 
   private def expand_node(node)
-    @expanded_paths[node.alias] = node.path if node.alias
+    @expanded_paths[node.alias.to_sym] = node.path if node.alias
     node.children.each do |child_node|
       expand_node(child_node)
     end

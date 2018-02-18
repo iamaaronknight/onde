@@ -47,18 +47,18 @@ describe 'Onde' do
 
     describe '#aliases' do
       it 'returns all of the aliases' do
-        expect(Onde.aliases).to eq Set.new(['foo', 'bar', 'deeply_nested', 'baz', 'spacy'])
+        expect(Onde.aliases).to eq Set.new([:foo, :bar, :deeply_nested, :baz, :spacy])
       end
     end
 
     describe '#paths' do
       it 'returns a hash of all the paths' do
         expect(Onde.paths).to eq (
-          { 'foo' => 'foo.txt',
-            'bar' => 'test_directory/bar.txt',
-            'deeply_nested' => 'test_directory/deep_test_directory/',
-            'baz' => 'test_directory/deep_test_directory/<file_name>.<file_type>',
-            'spacy' => '/A Folder/a file.txt'
+          { foo: 'foo.txt',
+            bar: 'test_directory/bar.txt',
+            deeply_nested: 'test_directory/deep_test_directory/',
+            baz: 'test_directory/deep_test_directory/<file_name>.<file_type>',
+            spacy: '/A Folder/a file.txt'
           }
         )
       end
@@ -66,35 +66,39 @@ describe 'Onde' do
 
     describe '#path' do
       it 'returns a path' do
-        expect(Onde.path('foo')).to eq 'foo.txt'
+        expect(Onde.path(:foo)).to eq 'foo.txt'
       end
 
       it 'returns a directory' do
-        expect(Onde.path('deeply_nested')).to eq 'test_directory/deep_test_directory/'
+        expect(Onde.path(:deeply_nested)).to eq 'test_directory/deep_test_directory/'
       end
 
       it 'returns a nested path' do
-        expect(Onde.path('bar')).to eq 'test_directory/bar.txt'
+        expect(Onde.path(:bar)).to eq 'test_directory/bar.txt'
       end
 
       context 'for a path with spaces in it' do
         it 'returns the path with spaces escaped' do
-          expect(Onde.path('spacy')).to eq '/A\ Folder/a\ file.txt'
+          expect(Onde.path(:spacy)).to eq '/A\ Folder/a\ file.txt'
         end
 
         it 'returns the path without spaces escaped when escaping is disabled' do
-          expect(Onde.path('spacy', escape: false)).to eq '/A Folder/a file.txt'
+          expect(Onde.path(:spacy, escape: false)).to eq '/A Folder/a file.txt'
         end
       end
 
       context 'for an alias with variables' do
         it 'replaces the path variables with the specified values' do
-          expect(Onde.path('baz', file_name: 'test_file_name', file_type: 'txt')).to eq 'test_directory/deep_test_directory/test_file_name.txt'
+          expect(Onde.path(:baz, file_name: 'test_file_name', file_type: 'txt')).to eq 'test_directory/deep_test_directory/test_file_name.txt'
         end
 
         it 'raises an error when values are not supplied for all of the variables' do
-          expect{Onde.path('baz', file_name: 'test_file_name')}.to raise_error Onde::ArgumentsError
+          expect{Onde.path(:baz, file_name: 'test_file_name')}.to raise_error Onde::ArgumentsError
         end
+      end
+
+      it 'works when passed a string instead of a symbol' do
+        expect(Onde.path('foo')).to eq 'foo.txt'
       end
     end
   end
