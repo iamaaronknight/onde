@@ -17,15 +17,20 @@ class Onde
     def path(path_alias, kwargs={})
       _path = paths[path_alias]
 
+      escape = kwargs.delete(:escape)
+      escape = true if escape.nil?
+
       if kwargs
         kwargs.each do |variable, value|
-          _path = _path.sub(/<#{variable}>/, value)
+          _path = _path.gsub(/<#{variable}>/, value)
         end
       end
 
       if !!(_path =~ /<.*?>/)
         raise Onde::ArgumentsError
       end
+
+      _path = _path.gsub(/ /, '\ ') if escape
 
       _path
     end

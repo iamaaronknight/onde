@@ -14,6 +14,8 @@ YAML_CONTENTS = <<-eos
       - deeply_nested: deep_test_directory/
       -
         - baz: <file_name>.<file_type>
+-
+  - spacy: /A Folder/a file.txt
 eos
 
 
@@ -45,7 +47,7 @@ describe 'Onde' do
 
     describe '#aliases' do
       it 'returns all of the aliases' do
-        expect(Onde.aliases).to eq Set.new(['foo', 'bar', 'deeply_nested', 'baz'])
+        expect(Onde.aliases).to eq Set.new(['foo', 'bar', 'deeply_nested', 'baz', 'spacy'])
       end
     end
 
@@ -56,6 +58,7 @@ describe 'Onde' do
             'bar' => 'test_directory/bar.txt',
             'deeply_nested' => 'test_directory/deep_test_directory/',
             'baz' => 'test_directory/deep_test_directory/<file_name>.<file_type>',
+            'spacy' => '/A Folder/a file.txt'
           }
         )
       end
@@ -72,6 +75,16 @@ describe 'Onde' do
 
       it 'returns a nested path' do
         expect(Onde.path('bar')).to eq 'test_directory/bar.txt'
+      end
+
+      context 'for a path with spaces in it' do
+        it 'returns the path with spaces escaped' do
+          expect(Onde.path('spacy')).to eq '/A\ Folder/a\ file.txt'
+        end
+
+        it 'returns the path without spaces escaped when escaping is disabled' do
+          expect(Onde.path('spacy', escape: false)).to eq '/A Folder/a file.txt'
+        end
       end
 
       context 'for an alias with variables' do
