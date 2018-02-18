@@ -1,0 +1,17 @@
+-
+  - ~/Desktop/AudioFiles/
+  -
+    - 
+      - artist_directory: <artist_name>/
+      -
+        -
+          - album_art: <album_name>.png
+        -
+          - description: <album_name>.txt
+        -
+          - songs_directory: songs/
+          -
+            -
+              - mp3: <song_name>.mp3
+            -
+              - wav: <song_name>.wav
