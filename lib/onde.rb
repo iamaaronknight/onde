@@ -20,27 +20,30 @@ class Onde
       @@onde_file_path ||= '.onde.yml'
     end
 
-    def path(path_alias, kwargs={})
+    def path(path_alias, variables={}, options={})
       _path = paths[path_alias.to_sym]
 
-      escape = kwargs.delete(:escape)
-      escape = true if escape.nil?
-
-      terminal_slash = kwargs.delete(:terminal_slash)
-      terminal_slash = false if terminal_slash.nil?
-
-      if kwargs
-        kwargs.each do |variable, value|
+      if variables
+        variables.each do |variable, value|
           _path = _path.gsub(/<#{variable}>/, value)
         end
       end
 
       if !!(_path =~ /<.*?>/)
-        raise Onde::ArgumentsError
+        raise Onde::ArgumentsError.new("No value supplied for the variable #{ _path.scan(/<.*?>/)[0] }")
       end
 
-      _path = _path.gsub(/ /, '\ ') if escape
+      escape_spaces = options[:escape_spaces]
+      escape_spaces = true if escape_spaces.nil?
+      _path = _path.gsub(/ /, '\ ') if escape_spaces
+
+      terminal_slash = options[:terminal_slash]
+      terminal_slash = false if terminal_slash.nil?
       _path = _path + '/' if terminal_slash and !(_path =~ /\/\z/)
+
+      expand_home = options[:expand_home_dir]
+      expand_home = true if expand_home.nil?
+      _path = _path.sub(/\A~/, Dir.home) if expand_home
 
       _path
     end

@@ -1,8 +1,8 @@
 -
-  - ~/Desktop/AudioFiles/
+  - audio_files_dir: ~/Desktop/AudioFiles
   -
     - 
-      - artist_directory: <artist_name>/
+      - <artist_name>
       -
         -
           - album_art: <album_name>.png

@@ -8,7 +8,7 @@ Onde fixes that by allowing you to attach meaningful names to your significant f
 
 
 ## Usage
-To use Onde, create a YAML file named `onde.yml` in the root directory of your project. The file that maps important files and directories to convenient aliases that you can use to refer to those files.
+To use Onde, create a YAML file named `.onde.yml` in the root directory of your project. The file that maps important files and directories to convenient aliases that you can use to refer to those files.
 
 
 **paths.yml**
@@ -78,6 +78,15 @@ Directories can be nested, to make it easy to refer to represent multiple signif
  => "some/folder/path/to/child2/deeply/embedded/thing.txt"
 ```
 
+## Documentation
+
+### The paths file
+The default name and location for your paths file is `./.onde.yml`. You can also set a different file name or location:
+
+```ruby
+> Onde.onde_file_path = 'example.yaml'
+ => "example.yaml"
+```
 
 A well-formed Onde paths file should be in the format:
 ```yaml
@@ -89,6 +98,59 @@ A well-formed Onde paths file should be in the format:
     -                                # Here's a sibling node, representing another file in the same directory
       - alias2: <variable>.txt       # Declare variables in angle brackets.
 ```
+
+Errors in configuring your paths file will raise an `Onde::ConfigurationError`.
+
+### The .aliases class method
+You can list all of the available aliases by calling `.aliases`. The return value is a set of symbols.
+
+```ruby
+> Onde.aliases
+ => #<Set: {:audio_files_dir, :album_art, :description, :songs_directory, :mp3, :wav}>
+```
+
+### The .paths class method
+You can list all of the paths loaded from your paths yaml file by calling `.paths`. The return value is a hash of aliases mapped to their respective paths. 
+
+```ruby
+> Onde.paths
+ => {:audio_files_dir=>"~/Desktop/AudioFiles", :album_art=>"~/Desktop/AudioFiles/<artist_name>/<album_name>.png", :description=>"~/Desktop/AudioFiles/<artist_name>/<album_name>.txt", :songs_directory=>"~/Desktop/AudioFiles/<artist_name>/songs/", :mp3=>"~/Desktop/AudioFiles/<artist_name>/songs/<song_name>.mp3", :wav=>"~/Desktop/AudioFiles/<artist_name>/songs/<song_name>.wav"}
+```
+
+Note that the paths are listed "raw": spaces are not escaped, path variables are not filled in, the home directory is not expanded, terminal slashes are not applied for directories, etc.
+
+### The .path class method
+The `.path` method returns the full path for a specific alias:
+
+```ruby
+> Onde.path(:audio_files_dir)
+ => "/Users/myuser/Desktop/AudioFiles"
+```
+
+By default,
+- The `~` symbol at the start of a path is expanded to the current user's home directory.
+- A terminal slash is not added for a path that represents a directory.
+- Spaces in the file path are escaped.
+
+The `.path` method takes a second argument which is a hash containing path variables. Each key in the hash should match a variable name, and the value is the string which will be substituted for that variable.
+
+```ruby
+> Onde.path(:album_art, artist_name: 'Deltron 3030', album_name: 'Deltron 3030')
+ => "/Users/myuser/Desktop/AudioFiles/Deltron\\ 3030/Deltron\\ 3030.png"
+```
+
+If you fail to supply a value for a variable present in the path, the method will raise an `Onde::ArgumentsError`. If you supply extra elements in the hash, those keys and values will be ignored.
+
+Extra options can be supplied in a third argument to `.paths`:
+```ruby
+> Onde.path(:album_art, {artist_name: 'Deltron 3030', album_name: 'Deltron 3030'}, {escape_spaces: false, expand_home_dir: false})
+ => "~/Desktop/AudioFiles/Deltron 3030/Deltron 3030.png"
+```
+
+Options:
+- `:expand_home_dir`: (default: `true`) When set to `false`, a `~` symbol at the start of a path will not be expanded to the user's home directory.
+- `:escape_spaces`: (default: `true`) When set to `false`, spaces in a path name are left as-is and not escaped.
+- `:terminal_slash`: (default: `false`) When set to `true`, ensures that the path ends with a final `/`. Note that this will append a final slash, regardless of whether the path represents a file or directory.
 
 
 ## License
