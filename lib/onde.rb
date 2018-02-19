@@ -26,6 +26,9 @@ class Onde
       escape = kwargs.delete(:escape)
       escape = true if escape.nil?
 
+      terminal_slash = kwargs.delete(:terminal_slash)
+      terminal_slash = false if terminal_slash.nil?
+
       if kwargs
         kwargs.each do |variable, value|
           _path = _path.gsub(/<#{variable}>/, value)
@@ -37,6 +40,7 @@ class Onde
       end
 
       _path = _path.gsub(/ /, '\ ') if escape
+      _path = _path + '/' if terminal_slash and !(_path =~ /\/\z/)
 
       _path
     end

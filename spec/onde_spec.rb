@@ -11,7 +11,7 @@ YAML_CONTENTS = <<-eos
     -
       - bar: bar.txt
     -
-      - deeply_nested: deep_test_directory/
+      - deeply_nested: deep_test_directory
       -
         -
           - baz: <file_name>.<file_type>
@@ -64,7 +64,7 @@ describe Onde do
           expect(Onde.paths).to eq (
             { foo: 'foo.txt',
               bar: 'test_directory/bar.txt',
-              deeply_nested: 'test_directory/deep_test_directory/',
+              deeply_nested: 'test_directory/deep_test_directory',
               baz: 'test_directory/deep_test_directory/<file_name>.<file_type>',
               spacy: '/A Folder/a file.txt'
             }
@@ -77,8 +77,14 @@ describe Onde do
           expect(Onde.path(:foo)).to eq 'foo.txt'
         end
 
-        it 'returns a directory' do
-          expect(Onde.path(:deeply_nested)).to eq 'test_directory/deep_test_directory/'
+        context 'for a directory' do
+          it 'returns the directory without a terminal slash by default' do
+            expect(Onde.path(:deeply_nested)).to eq 'test_directory/deep_test_directory'
+          end
+
+          it 'ends with a terminal slash when so requested' do
+            expect(Onde.path(:deeply_nested, terminal_slash: true)).to eq 'test_directory/deep_test_directory/'
+          end
         end
 
         it 'returns a nested path' do
@@ -115,66 +121,78 @@ end
 
 
 describe Onde::DirectoryStructure do
-  it 'initializes with valid data' do
-    data = YAML.load(YAML_CONTENTS)
-    onde = Onde::DirectoryStructure.new(data)
-    expect(onde.to_hash).to eq (
-      { foo: 'foo.txt',
-        bar: 'test_directory/bar.txt',
-        deeply_nested: 'test_directory/deep_test_directory/',
-        baz: 'test_directory/deep_test_directory/<file_name>.<file_type>',
-        spacy: '/A Folder/a file.txt'
-      }
-    )
+  describe '#new' do
+    it 'initializes with valid data' do
+      data = YAML.load(YAML_CONTENTS)
+      onde = Onde::DirectoryStructure.new(data)
+      expect(onde.to_hash).to eq (
+        { foo: 'foo.txt',
+          bar: 'test_directory/bar.txt',
+          deeply_nested: 'test_directory/deep_test_directory',
+          baz: 'test_directory/deep_test_directory/<file_name>.<file_type>',
+          spacy: '/A Folder/a file.txt'
+        }
+      )
+    end
+
+    it 'raises an error when the same alias is used more than once' do
+      expect{Onde::DirectoryStructure.new([[{foo: 'path/a'}], [{foo: 'path/b'}]])}.to raise_error Onde::ConfigurationError
+    end
+
+    it 'raises an error for incorrectly formatted configuration data' do
+      # These are some examples with well-formed data
+      Onde::DirectoryStructure.new([[{foo: 'path/a'}]])
+      Onde::DirectoryStructure.new([[{foo: 'path/a'}, [[{bar: 'path/b'}]]]])
+
+      # - foo: path/a
+      # instead of:
+      # -
+      #   - foo: path/a
+      expect{
+        Onde::DirectoryStructure.new([{foo: 'path/a'}])
+      }.to raise_error Onde::ConfigurationError
+
+      # -
+      #   - foo: path/a
+      #   -
+      #     - bar: path/b
+      # instead of :
+      # -
+      #   - foo: path/a
+      #   -
+      #     -
+      #       - bar: path/b
+      expect{
+        Onde::DirectoryStructure.new([[{foo: 'path/a'}, [{bar: 'path/b'}]]])
+      }.to raise_error Onde::ConfigurationError
+
+      # -
+      #   - foo: path/a
+      #   - bar: path/b
+      # instead of:
+      # -
+      #   - foo: path/a
+      #   -
+      #     -
+      #       - bar: path/b
+      # or:
+      # -
+      #   - foo: path/a
+      # -
+      #   - bar: path/b
+      expect{
+        Onde::DirectoryStructure.new([[{foo: 'path/a'}, {bar: 'path/b'}]])
+      }.to raise_error Onde::ConfigurationError
+    end
   end
 
-  it 'raises an error when the same alias is used more than once' do
-    expect{Onde::DirectoryStructure.new([[{foo: 'path/a'}], [{foo: 'path/b'}]])}.to raise_error Onde::ConfigurationError
-  end
+  describe '#to_hash' do
+    it 'adds a slash to any non-terminal node' do
+      expect(Onde::DirectoryStructure.new([['path', [[{foo: 'foo'}]]]]).to_hash).to eq({foo: 'path/foo'})
+    end
 
-  it 'raises an error for incorrectly formatted configuration data' do
-    # These are some examples with well-formed data
-    Onde::DirectoryStructure.new([[{foo: 'path/a'}]])
-    Onde::DirectoryStructure.new([[{foo: 'path/a'}, [[{bar: 'path/b'}]]]])
-
-    # - foo: path/a
-    # instead of:
-    # -
-    #   - foo: path/a
-    expect{
-      Onde::DirectoryStructure.new([{foo: 'path/a'}])
-    }.to raise_error Onde::ConfigurationError
-
-    # -
-    #   - foo: path/a
-    #   -
-    #     - bar: path/b
-    # instead of :
-    # -
-    #   - foo: path/a
-    #   -
-    #     -
-    #       - bar: path/b
-    expect{
-      Onde::DirectoryStructure.new([[{foo: 'path/a'}, [{bar: 'path/b'}]]])
-    }.to raise_error Onde::ConfigurationError
-
-    # -
-    #   - foo: path/a
-    #   - bar: path/b
-    # instead of:
-    # -
-    #   - foo: path/a
-    #   -
-    #     -
-    #       - bar: path/b
-    # or:
-    # -
-    #   - foo: path/a
-    # -
-    #   - bar: path/b
-    expect{
-      Onde::DirectoryStructure.new([[{foo: 'path/a'}, {bar: 'path/b'}]])
-    }.to raise_error Onde::ConfigurationError
+    it 'accepts a slash for a non-terminal node' do
+      expect(Onde::DirectoryStructure.new([['path/', [[{foo: 'foo'}]]]]).to_hash).to eq({foo: 'path/foo'})
+    end
   end
 end
