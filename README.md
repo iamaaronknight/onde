@@ -92,6 +92,6 @@ A well-formed Onde paths file should be in the format:
 
 
 ## License
-Onde is maintained by Aaron Knight <iamaaronknight@gmail.com>.  It is released
-under the MIT license. See the LICENSE.txt file for more details.
+Onde is maintained by Aaron Knight (<iamaaronknight@gmail.com>).  It is released
+under the MIT license. See the LICENSE file for more details.
 
