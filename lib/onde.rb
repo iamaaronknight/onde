@@ -25,7 +25,7 @@ class Onde
 
       if variables
         variables.each do |variable, value|
-          _path = _path.gsub(/<#{variable}>/, value)
+          _path = _path.gsub(/<#{variable}>/, value.to_s)
         end
       end
 

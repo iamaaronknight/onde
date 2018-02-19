@@ -112,6 +112,10 @@ describe Onde do
           it "raises an error when values are not supplied for all of the variables" do
             expect{Onde.path(:baz, file_name: "test_file_name")}.to raise_error Onde::ArgumentsError
           end
+
+          it "allows a numerical value for the variable" do
+            expect(Onde.path(:baz, file_name: 123, file_type: "txt")).to eq "test_directory/deep_test_directory/123.txt"
+          end
         end
 
         it "works when passed a string instead of a symbol" do
