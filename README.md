@@ -62,8 +62,6 @@ Directories can be nested, to make it easy to refer to represent multiple signif
           -
             -
               - thing2: deeply/embedded/thing.txt
-    - 
-      - 
         
 ```
 
