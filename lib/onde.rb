@@ -8,6 +8,11 @@ class Onde
 
   class << self
     def onde_file_path=(path)
+      begin
+        YAML.load_file(path)
+      rescue Errno::ENOENT
+        raise Onde::ConfigurationError.new('No .yml file found at the specified path')
+      end
       @@onde_file_path = path
     end
 
