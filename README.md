@@ -7,7 +7,11 @@ Scripts that need to know the location of more than a few files often become con
 Onde fixes that by allowing you to attach meaningful names to your significant files and directories.
 
 
-## Usage
+## Quickstart
+Install Onde:
+
+`gem install onde`
+
 To use Onde, create a YAML file named `.onde.yml` in the root directory of your project. The file that maps important files and directories to convenient aliases that you can use to refer to those files.
 
 
@@ -76,7 +80,8 @@ Directories can be nested, to make it easy to refer to represent multiple signif
  => "some/folder/path/to/child2/deeply/embedded/thing.txt"
 ```
 
-## Documentation
+
+## Usage
 
 ### The paths file
 The default name and location for your paths file is `./.onde.yml`. You can also set a different file name or location:
@@ -155,3 +160,13 @@ Options:
 Onde is maintained by Aaron Knight (<iamaaronknight@gmail.com>).  It is released
 under the MIT license. See the LICENSE file for more details.
 
+
+## Contributing
+Contributions are welcome. To contribute:
+- Fork this repository
+- Read through this README and propose changes if you find anything that's confusing, inacurrate, or that could simply be explained better.
+- Check [open issues](https://github.com/iamaaronknight/onde/issues) or add a new issue if you have a problem or something you'd like to add.
+- Write some code
+- Run tests: `rspec spec/`
+- Create a pull request
+- Wait (but I'll try not to make you wait too long)

@@ -1,4 +1,4 @@
-require "./lib/onde.rb"
+require "onde"
 require "yaml"
 require "set"
 
