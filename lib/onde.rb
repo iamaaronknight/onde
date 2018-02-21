@@ -53,7 +53,11 @@ class Onde
     end
 
     def paths
-      @@expanded_paths ||=  Onde::DirectoryStructure.paths(YAML.load_file(onde_file_path))
+      begin
+        @@expanded_paths ||=  Onde::DirectoryStructure.paths(YAML.load_file(onde_file_path))
+      rescue Errno::ENOENT
+        raise Onde::ConfigurationError.new('No .yml file found at the specified path')
+      end
     end
 
   end

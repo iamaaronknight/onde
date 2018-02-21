@@ -36,6 +36,10 @@ describe Onde do
     it "defaults to .onde.yaml" do
       expect(Onde.onde_file_path).to eq ".onde.yml"
     end
+
+    it "raises an error when there is no file at .onde.yml and .path is called" do
+      expect{Onde.path(:foo)}.to raise_error Onde::ConfigurationError
+    end
   end
 
   context "with the onde file path explicitly set" do
