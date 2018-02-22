@@ -5,6 +5,7 @@ require 'set'
 class Onde
   class ArgumentsError < StandardError; end
   class ConfigurationError < StandardError; end
+  class PathError < StandardError; end
 
   class << self
     def onde_file_path=(path)
@@ -21,31 +22,9 @@ class Onde
     end
 
     def path(path_alias, variables={}, options={})
-      _path = paths[path_alias.to_sym]
-
-      if variables
-        variables.each do |variable, value|
-          _path = _path.gsub(/<#{variable}>/, value.to_s)
-        end
-      end
-
-      if !!(_path =~ /<.*?>/)
-        raise Onde::ArgumentsError.new("No value supplied for the variable #{ _path.scan(/<.*?>/)[0] }")
-      end
-
-      escape_spaces = options[:escape_spaces]
-      escape_spaces = true if escape_spaces.nil?
-      _path = _path.gsub(/ /, '\ ') if escape_spaces
-
-      terminal_slash = options[:terminal_slash]
-      terminal_slash = false if terminal_slash.nil?
-      _path = _path + '/' if terminal_slash and !(_path =~ /\/\z/)
-
-      expand_home = options[:expand_home_dir]
-      expand_home = true if expand_home.nil?
-      _path = _path.sub(/\A~/, Dir.home) if expand_home
-
-      _path
+      raw_path = paths[path_alias.to_sym]
+      raise Onde::PathError if not raw_path
+      Onde::PathFormatter.new(raw_path, variables, options).get
     end
 
     def aliases
@@ -63,6 +42,59 @@ class Onde
   end
 end
 
+
+class Onde::PathFormatter
+  def initialize(raw_path, variables, options)
+    @raw_path = raw_path
+    @variables = variables
+    @options = options
+  end
+
+  def get
+    path = apply_variables(@raw_path) if @variables
+    path = escape_spaces(path) if escape_spaces?
+    path = add_terminal_slash(path) if terminal_slash?
+    path = expand_home(path) if expand_home?
+    path
+  end
+
+  private
+    def apply_variables(path)
+      @variables.each do |variable, value|
+        path = path.gsub(/<#{variable}>/, value.to_s)
+      end
+
+      if !!(path =~ /<.*?>/)
+        raise Onde::ArgumentsError.new("No value supplied for the variable #{ path.scan(/<.*?>/)[0] }")
+      end
+
+      path
+    end
+
+    def escape_spaces?
+      @options[:escape_spaces].nil? ? true : @options[:escape_spaces]
+    end
+
+    def escape_spaces(path)
+      path.gsub(/ /, '\ ')
+    end
+
+    def terminal_slash?
+      @options[:terminal_slash].nil? ? false : @options[:terminal_slash]
+    end
+
+    def add_terminal_slash(path)
+      !!(path =~ /\/\z/) ? path : path + '/'
+    end
+
+    def expand_home?
+      @options[:expand_home_dir].nil? ? true: @options[:expand_home_dir]
+    end
+
+    def expand_home(path)
+      path.sub(/\A~/, Dir.home)
+    end
+end
 
 class Onde::DirectoryStructure
   def self.paths(data)

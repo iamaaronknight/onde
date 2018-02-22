@@ -84,6 +84,10 @@ describe Onde do
           expect(Onde.path(:foo)).to eq "foo.txt"
         end
 
+        it "raises an error for a non-existing path" do
+          expect{Onde.path(:non_existing)}.to raise_error Onde::PathError
+        end
+
         context "for a directory" do
           it "returns the directory without a terminal slash by default" do
             expect(Onde.path(:deeply_nested)).to eq "test_directory/deep_test_directory"
@@ -142,6 +146,66 @@ describe Onde do
   end
 end
 
+
+describe Onde::PathFormatter do
+  describe '#get' do
+    it 'allows a numerical value for a variable' do
+      expect(Onde::PathFormatter.new('/test_directory/<foo>.png', {foo: 123.45}, {}).get).to eq "/test_directory/123.45.png"
+    end
+
+    context 'with default options' do
+      it 'returns a path' do
+        expect(Onde::PathFormatter.new('~/A Directory/bar', {}, {}).get).to eq "#{Dir.home}/A\\ Directory/bar"
+      end
+
+      it 'returns a path with variables' do
+        expect(Onde::PathFormatter.new('~/A Directory/<foo>', {foo: 'A File'}, {}).get).to eq "#{Dir.home}/A\\ Directory/A\\ File"
+      end
+    end
+
+    context 'with terminal_slash: true' do
+      let(:options) {{terminal_slash: true}}
+      it 'returns a path with a terminal slash' do
+        expect(Onde::PathFormatter.new('test_directory', {}, options).get).to eq "test_directory/"
+      end
+    end
+
+    context 'with terminal_slash: false' do
+      let(:options) {{terminal_slash: false}}
+      it 'returns a path with a terminal slash' do
+        expect(Onde::PathFormatter.new('test_directory', {}, options).get).to eq "test_directory"
+      end
+    end
+
+    context 'with expand_home_dir: true' do
+      let(:options) {{expand_home_dir: true}}
+      it 'does not expand the home directory' do
+        expect(Onde::PathFormatter.new('~/test_directory', {}, options).get).to eq "#{Dir.home}/test_directory"
+      end
+    end
+
+    context 'with expand_home_dir: false' do
+      let(:options) {{expand_home_dir: false}}
+      it 'does not expand the home directory' do
+        expect(Onde::PathFormatter.new('~/test_directory', {}, options).get).to eq "~/test_directory"
+      end
+    end
+
+    context 'with escape_spaces: true' do
+      let(:options) {{escape_spaces: true}}
+      it 'does not escape spaces' do
+        expect(Onde::PathFormatter.new('A Directory/', {}, options).get).to eq "A\\ Directory/"
+      end
+    end
+
+    context 'with escape_spaces: false' do
+      let(:options) {{escape_spaces: false}}
+      it 'does not escape spaces' do
+        expect(Onde::PathFormatter.new('A Directory/', {}, options).get).to eq "A Directory/"
+      end
+    end
+  end
+end
 
 describe Onde::DirectoryStructure do
   describe "#new" do
