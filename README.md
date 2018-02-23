@@ -1,6 +1,6 @@
 # Onde
 
-Onde ('OWN-jee') is a simple Ruby gem for referencing file and directory paths meaningfully.
+Onde (pronounced 'OWN-jee', meaning "where" in Portuguese) is a simple Ruby gem for referencing file and directory paths meaningfully.
 
 Scripts that need to know the location of more than a few files often become confusing to maintain because file and directory paths are generated haphazardly in various parts of the code.
 
