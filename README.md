@@ -83,13 +83,13 @@ The default name and location for your paths file is `.onde.yml`. You can also s
 
 A well-formed Onde paths file should be in the format:
 ```yaml
--                                    # The yaml file is composed of one or more nodes
-  - path_segment                     # Each node contains at least one item, which represents the file path
-  -                                  # Nodes can also contain a second list item for any children.
-    -                                # This represents the root of another node.
-      - alias: path_segment          # This is how to attach an alias to a particular path.
+-                                    # The yaml file is a list of one or more nodes
+  - path_segment                     # Each node contains a list with at least one item, which represents the file path
+  -                                  # Nodes can also contain a second item which represents child nodes
+    -                                # This is the root of the first child node.
+      - alias: path_segment          # This is how to define an alias for a particular path.
     -                                # Here's a sibling node, representing another file in the same directory
-      - alias2: <variable>.txt       # Declare variables in angle brackets.
+      - alias2: <variable>.txt       # Define variables in angle brackets.
 ```
 
 Errors in configuring your paths file will raise an `Onde::ConfigurationError`.
