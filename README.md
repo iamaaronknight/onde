@@ -37,8 +37,6 @@ Paths can include variables, which are marked with angle brackets. When calling 
 ```
 
 ```ruby
-> Onde.paths
- => {"my_alias"=>"/<my_directory>/<my_file>.txt"}
 > Onde.path('my_alias', my_directory: 'hey_there', my_file: 'hows_it_going')
 => "/hey_there/hows_it_going.txt"
 ```
