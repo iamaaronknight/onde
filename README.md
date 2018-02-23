@@ -24,15 +24,11 @@ To use Onde, create a YAML file named `.onde.yml` in the root directory of your 
 You can then retrieve the aliased path with `Onde.path(alias)`:
 
 ```ruby
-> Onde.aliases
- => #<Set: {"some_alias"}>
-> Onde.paths
- => {"some_alias"=>"some_path/some_file.txt"}
 > Onde.path('some_alias')
  => "some_path/some_file.txt"
 ```
 
-Paths can include variables, which are marked with angle brackets. When calling `paths()` you can fill in the variables:
+Paths can include variables, which are marked with angle brackets. When calling `path()` you can fill in the variables:
 
 **.onde.yml**
 ```yaml
@@ -41,8 +37,6 @@ Paths can include variables, which are marked with angle brackets. When calling 
 ```
 
 ```ruby
-> Onde.aliases
- => #<Set: {"my_alias"}>
 > Onde.paths
  => {"my_alias"=>"/<my_directory>/<my_file>.txt"}
 > Onde.path('my_alias', my_directory: 'hey_there', my_file: 'hows_it_going')
@@ -70,8 +64,6 @@ Directories can be nested, to make it easy to refer to represent multiple signif
 ```
 
 ```ruby
-> Onde.aliases
- => #<Set: {"top_level", "thing1", "thing2"}>
 > Onde.path('top_level')
  => "some/folder"
 > Onde.path('thing1')
