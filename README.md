@@ -1,10 +1,10 @@
 # Onde
 
-Onde (pronounced 'OWN-jee', meaning "where" in Portuguese) is a simple Ruby gem for referencing file and directory paths meaningfully.
+Onde (pronounced 'OWN-jee', meaning 'where' in Portuguese) is a simple Ruby gem for referencing file and directory paths meaningfully.
 
 Scripts that need to know the location of more than a few files often become confusing to maintain because file and directory paths are generated haphazardly in various parts of the code.
 
-Onde fixes that by allowing you to attach meaningful names to your significant files and directories.
+Onde fixes that by allowing you to map out significant files and directories centrally, and attach meaningful names to them.
 
 
 ## Quickstart
@@ -15,7 +15,7 @@ Install Onde:
 To use Onde, create a YAML file named `.onde.yml` in the root directory of your project. The file that maps important files and directories to convenient aliases that you can use to refer to those files.
 
 
-**paths.yml**
+**.onde.yml**
 ```yaml
 -
   - some_alias: some_path/some_file.txt
@@ -34,7 +34,7 @@ You can then retrieve the aliased path with `Onde.path(alias)`:
 
 Paths can include variables, which are marked with angle brackets. When calling `paths()` you can fill in the variables:
 
-**paths.yml**
+**.onde.yml**
 ```yaml
 - 
   - my_alias: /<my_directory>/<my_file>.txt
@@ -51,7 +51,7 @@ Paths can include variables, which are marked with angle brackets. When calling 
 
 Directories can be nested, to make it easy to refer to represent multiple significant locations within a file system.
 
-**paths.yml**
+**.onde.yml**
 ```yaml
 -
   - top_level: some/folder/
@@ -84,7 +84,7 @@ Directories can be nested, to make it easy to refer to represent multiple signif
 ## Usage
 
 ### The paths file
-The default name and location for your paths file is `./.onde.yml`. You can also set a different file name or location:
+The default name and location for your paths file is `.onde.yml`. You can also set a different file name or location:
 
 ```ruby
 > Onde.onde_file_path = 'example.yaml'
